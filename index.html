@@ -3,121 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Oxied | Minecraft Server Discovery</title>
-  <link rel="icon" href="https://cdn.discordapp.com/attachments/1392254650295779480/1392991306887860296/TEST.webp?ex=68718bc0&is=68703a40&hm=3c0f040706eb446399668b2fa8dfe4d9eb97dbe09296c78a41feb308032cb02f&" type="image/png">
+  <title>Minecraft Server Discovery</title>
+  <link rel="icon" href="https://via.placeholder.com/32?text=MC" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
   <style>
     body {
-      background-color: #1a202c;
+      background-color: #0a0a1a;
       color: #e2e8f0;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Roboto Mono', monospace;
     }
     .minecraft-bg {
-      background-image: linear-gradient(rgba(26, 32, 44, 0.8), rgba(26, 32, 44, 0.8)), url('https://images.unsplash.com/photo-1612036782188-736159a90bab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-      background-size: cover;
-      background-position: center;
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    #particles-js {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
     }
     .server-card {
-      border: 2px solid #a855f7;
-      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      border-radius: 0.75rem;
       padding: 1.5rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .server-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
     }
     .suggest-section {
-      border: 2px solid #a855f7;
-      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      border-radius: 0.75rem;
       padding: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+    .modal {
+      animation: slideUp 0.5s ease-out;
+    }
+    .header {
+      animation: slideIn 1s ease-out;
+    }
+    .pagination-button {
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideIn {
+      from { transform: translateX(-50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .neon-button {
+      background: linear-gradient(45deg, #a855f7, #00ddeb);
+      border: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .neon-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(0, 221, 235, 0.7);
+    }
+    .progress-bar {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.25rem;
+      overflow: hidden;
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, #a855f7, #00ddeb);
+      height: 1rem;
+      transition: width 0.5s ease;
+    }
+    .tooltip {
+      position: absolute;
+      background: #a855f7;
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .tooltip.show {
+      opacity: 1;
     }
   </style>
 </head>
-<body class="minecraft-bg min-h-screen">
+<body class="minecraft-bg">
+  <div id="particles-js"></div>
   <div id="root"></div>
   <script type="text/babel">
     const initialServers = [
-      { id: 1, name: "Hypixel", ip: "mc.hypixel.net", discord: "https://discord.gg/hypixel", description: "Largest server with minigames", tags: ["minigames", "skywars", "bedwars"] },
-      { id: 2, name: "Manacube", ip: "play.manacube.com", discord: "https://discord.gg/manacube", description: "Factions and Skyblock", tags: ["factions", "skyblock", "parkour"] },
-      { id: 3, name: "MCC Island", ip: "play.mccisland.net", discord: "https://discord.gg/mccisland", description: "Minecraft Championship minigames", tags: ["minigames", "parkour"] },
-      { id: 4, name: "Serenity", ip: "play.serenitymc.uk", discord: "https://discord.gg/serenitymc", description: "Friendly survival community", tags: ["survival", "smp"] },
-      { id: 5, name: "MineSuperior", ip: "play.mcs.gg", discord: "https://discord.gg/minesuperior", description: "Economy and RPG survival", tags: ["economy", "survival", "rpg"] },
-      { id: 6, name: "Convicted", ip: "mp.convicted.gg", discord: "https://discord.gg/convicted", description: "Custom SMP with dungeons", tags: ["smp", "pve", "events"] },
-      { id: 7, name: "EpicWorld", ip: "play.epicworld.gg", discord: "https://discord.gg/epicworld", description: "SMP with RPG quests", tags: ["smp", "rpg", "quests"] },
-      { id: 8, name: "OverCrafted", ip: "play.overcrafted.net", discord: "https://discord.gg/overcrafted", description: "Economy RPG with Pyro", tags: ["economy", "pve", "pvp"] },
-      { id: 9, name: "BlossomCraft", ip: "play.blossomcraft.org", discord: "https://discord.gg/blossomcraft", description: "Survival and prison", tags: ["survival", "prison"] },
-      { id: 10, name: "Complex-Gaming", ip: "play.complex-gaming.com", discord: "https://discord.gg/complexgaming", description: "Pixelmon and Skyblock", tags: ["pixelmon", "skyblock", "survival"] },
-      { id: 11, name: "Purple Prison", ip: "play.purpleprison.net", discord: "https://discord.gg/purpleprison", description: "Prison and survival", tags: ["prison", "survival"] },
-      { id: 12, name: "FadeCloud", ip: "play.fadecloud.com", discord: "https://discord.gg/fadecloud", description: "Skyblock and prison", tags: ["skyblock", "prison"] },
-      { id: 13, name: "HylexMC", ip: "play.hylexmc.net", discord: "https://discord.gg/hylexmc", description: "Bedwars and Skyblock", tags: ["bedwars", "skyblock"] },
-      { id: 14, name: "SunRealms", ip: "play.sunrealms.net", discord: "https://discord.gg/sunrealms", description: "Generators and survival", tags: ["survival", "economy"] },
-      { id: 15, name: "Mistylands", ip: "play.mistylands.net", discord: "https://discord.gg/mistylands", description: "Enhanced survival", tags: ["survival", "smp"] },
-      { id: 16, name: "PikaNetwork", ip: "play.pika-network.net", discord: "https://discord.gg/pikanetwork", description: "Factions and minigames", tags: ["factions", "minigames"] },
-      { id: 17, name: "JartexNetwork", ip: "play.jartexnetwork.com", discord: "https://discord.gg/jartexnetwork", description: "PvP and Skyblock", tags: ["pvp", "skyblock"] },
-      { id: 18, name: "Minemen Club", ip: "play.minemen.club", discord: "https://discord.gg/minemenclub", description: "Competitive PvP", tags: ["pvp", "duels"] },
-      { id: 19, name: "Lunar Network", ip: "play.lunar.gg", discord: "https://discord.gg/lunarnetwork", description: "PvP and factions", tags: ["pvp", "factions"] },
-      { id: 20, name: "CosmicPvP", ip: "play.cosmicpvp.com", discord: "https://discord.gg/cosmicpvp", description: "Factions and survival", tags: ["factions", "survival"] },
-      { id: 21, name: "ViperMC", ip: "play.vipermc.net", discord: "https://discord.gg/vipermc", description: "HCF and KitPvP", tags: ["pvp", "hcf"] },
-      { id: 22, name: "CubeCraft", ip: "play.cubecraft.net", discord: "https://discord.gg/cubecraft", description: "Minigames and Skyblock", tags: ["minigames", "skyblock"] },
-      { id: 23, name: "The Hive", ip: "play.hivemc.com", discord: "https://discord.gg/thehive", description: "Minigames and survival", tags: ["minigames", "survival"] },
-      { id: 24, name: "WynnCraft", ip: "play.wynncraft.com", discord: "https://discord.gg/wynncraft", description: "RPG adventure", tags: ["rpg", "adventure"] },
-      { id: 25, name: "PixelmonCraft", ip: "play.pixelmoncraft.com", discord: "https://discord.gg/pixelmoncraft", description: "Pixelmon survival", tags: ["pixelmon", "survival"] },
-      { id: 26, name: "Performium", ip: "play.performium.net", discord: "https://discord.gg/performium", description: "SMP and minigames", tags: ["smp", "minigames"] },
-      { id: 27, name: "MunchyMC", ip: "play.munchymc.com", discord: "https://discord.gg/munchymc", description: "KitPvP and survival", tags: ["pvp", "survival"] },
-      { id: 28, name: "Desteria", ip: "play.desteria.com", discord: "https://discord.gg/desteria", description: "Factions and RPG", tags: ["factions", "rpg"] },
-      { id: 29, name: "EcoCityCraft", ip: "play.ecc.eco", discord: "https://discord.gg/ecocitycraft", description: "Economy survival", tags: ["economy", "survival"] },
-      { id: 30, name: "Skyblock Network", ip: "play.skyblock.net", discord: "https://discord.gg/skyblocknetwork", description: "Skyblock and survival", tags: ["skyblock", "survival"] },
-      { id: 31, name: "PrisonFun", ip: "play.prisonfun.com", discord: "https://discord.gg/prisonfun", description: "Prison and PvP", tags: ["prison", "pvp"] },
-      { id: 32, name: "ArcadeMC", ip: "play.arcademc.net", discord: "https://discord.gg/arcademc", description: "Minigames and survival", tags: ["minigames", "survival"] },
-      { id: 33, name: "SkyKings", ip: "play.skykings.net", discord: "https://discord.gg/skykings", description: "Skyblock and PvP", tags: ["skyblock", "pvp"] },
-      { id: 34, name: "InvadedLands", ip: "play.invadedlands.net", discord: "https://discord.gg/invadedlands", description: "KitPvP and Skyblock", tags: ["pvp", "skyblock"] },
-      { id: 35, name: "MineHeroes", ip: "play.mineheroes.net", discord: "https://discord.gg/mineheroes", description: "Factions and survival", tags: ["factions", "survival"] },
-      { id: 36, name: "SnapCraft", ip: "play.snapcraft.net", discord: "https://discord.gg/snapcraft", description: "Prison and Skyblock", tags: ["prison", "skyblock"] },
-      { id: 37, name: "GommeHD", ip: "play.gommehd.net", discord: "https://discord.gg/gommehd", description: "Minigames and PvP", tags: ["minigames", "pvp"] },
-      { id: 38, name: "PokeSaga", ip: "play.pokesaga.org", discord: "https://discord.gg/pokesaga", description: "Pixelmon and survival", tags: ["pixelmon", "survival"] },
-      { id: 39, name: "LemonCloud", ip: "play.lemoncloud.net", discord: "https://discord.gg/lemoncloud", description: "Factions and Skyblock", tags: ["factions", "skyblock"] },
-      { id: 40, name: "VulcanMC", ip: "play.vulcanmc.net", discord: "https://discord.gg/vulcanmc", description: "HCF and PvP", tags: ["pvp", "hcf"] },
-      { id: 41, name: "Minesharp", ip: "play.minesharp.org", discord: "https://discord.gg/minesharp", description: "Survival and minigames", tags: ["survival", "minigames"] },
-      { id: 42, name: "BlockDrop", ip: "play.blockdrop.org", discord: "https://discord.gg/blockdrop", description: "Minigames and Skyblock", tags: ["minigames", "skyblock"] },
-      { id: 43, name: "PixelSpark", ip: "play.pixelspark.org", discord: "https://discord.gg/pixelspark", description: "Pixelmon and survival", tags: ["pixelmon", "survival"] },
-      { id: 44, name: "CraftyMynes", ip: "play.craftymynes.com", discord: "https://discord.gg/craftymynes", description: "Vanilla survival", tags: ["survival", "vanilla"] },
-      { id: 45, name: "SkyHype", ip: "play.skyhype.net", discord: "https://discord.gg/skyhype", description: "Skyblock and survival", tags: ["skyblock", "survival"] },
-      { id: 46, name: "PokeFind", ip: "play.pokefind.co", discord: "https://discord.gg/pokefind", description: "Pixelmon adventure", tags: ["pixelmon", "adventure"] },
-      { id: 47, name: "MineBox", ip: "play.minebox.es", discord: "https://discord.gg/minebox", description: "Survival and PvP", tags: ["survival", "pvp"] },
-      { id: 48, name: "PvPWars", ip: "play.pvpwars.net", discord: "https://discord.gg/pvpwars", description: "Skyblock and factions", tags: ["skyblock", "factions"] },
-      { id: 49, name: "ArkhamNetwork", ip: "play.arkhamnetwork.org", discord: "https://discord.gg/arkhamnetwork", description: "Prison and factions", tags: ["prison", "factions"] },
-      { id: 50, name: "Minecadia", ip: "play.minecadia.com", discord: "https://discord.gg/minecadia", description: "Factions and survival", tags: ["factions", "survival"] },
+      { id: 1, name: "Hypixel", ip: "mc.hypixel.net", discord: "https://discord.gg/hypixel", description: "Largest server with minigames", tags: ["minigames", "skywars", "bedwars"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 2, name: "Manacube", ip: "play.manacube.com", discord: "https://discord.gg/manacube", description: "Factions and Skyblock", tags: ["factions", "skyblock", "parkour"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 3, name: "MCC Island", ip: "play.mccisland.net", discord: "https://discord.gg/mccisland", description: "Minecraft Championship minigames", tags: ["minigames", "parkour"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 4, name: "Serenity", ip: "play.serenitymc.uk", discord: "https://discord.gg/serenitymc", description: "Friendly survival community", tags: ["survival", "smp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 5, name: "MineSuperior", ip: "play.mcs.gg", discord: "https://discord.gg/minesuperior", description: "Economy and RPG survival", tags: ["economy", "survival", "rpg"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 6, name: "Convicted", ip: "mp.convicted.gg", discord: "https://discord.gg/convicted", description: "Custom SMP with dungeons", tags: ["smp", "pve", "events"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 7, name: "EpicWorld", ip: "play.epicworld.gg", discord: "https://discord.gg/epicworld", description: "SMP with RPG quests", tags: ["smp", "rpg", "quests"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 8, name: "OverCrafted", ip: "play.overcrafted.net", discord: "https://discord.gg/overcrafted", description: "Economy RPG with Pyro", tags: ["economy", "pve", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 9, name: "BlossomCraft", ip: "play.blossomcraft.org", discord: "https://discord.gg/blossomcraft", description: "Survival and prison", tags: ["survival", "prison"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 10, name: "Complex-Gaming", ip: "play.complex-gaming.com", discord: "https://discord.gg/complexgaming", description: "Pixelmon and Skyblock", tags: ["pixelmon", "skyblock", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 11, name: "Purple Prison", ip: "play.purpleprison.net", discord: "https://discord.gg/purpleprison", description: "Prison and survival", tags: ["prison", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 12, name: "FadeCloud", ip: "play.fadecloud.com", discord: "https://discord.gg/fadecloud", description: "Skyblock and prison", tags: ["skyblock", "prison"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 13, name: "HylexMC", ip: "play.hylexmc.net", discord: "https://discord.gg/hylexmc", description: "Bedwars and Skyblock", tags: ["bedwars", "skyblock"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 14, name: "SunRealms", ip: "play.sunrealms.net", discord: "https://discord.gg/sunrealms", description: "Generators and survival", tags: ["survival", "economy"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 15, name: "Mistylands", ip: "play.mistylands.net", discord: "https://discord.gg/mistylands", description: "Enhanced survival", tags: ["survival", "smp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 16, name: "PikaNetwork", ip: "play.pika-network.net", discord: "https://discord.gg/pikanetwork", description: "Factions and minigames", tags: ["factions", "minigames"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 17, name: "JartexNetwork", ip: "play.jartexnetwork.com", discord: "https://discord.gg/jartexnetwork", description: "PvP and Skyblock", tags: ["pvp", "skyblock"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 18, name: "Minemen Club", ip: "play.minemen.club", discord: "https://discord.gg/minemenclub", description: "Competitive PvP", tags: ["pvp", "duels"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 19, name: "Lunar Network", ip: "play.lunar.gg", discord: "https://discord.gg/lunarnetwork", description: "PvP and factions", tags: ["pvp", "factions"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 20, name: "CosmicPvP", ip: "play.cosmicpvp.com", discord: "https://discord.gg/cosmicpvp", description: "Factions and survival", tags: ["factions", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 21, name: "ViperMC", ip: "play.vipermc.net", discord: "https://discord.gg/vipermc", description: "HCF and KitPvP", tags: ["pvp", "hcf"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 22, name: "CubeCraft", ip: "play.cubecraft.net", discord: "https://discord.gg/cubecraft", description: "Minigames and Skyblock", tags: ["minigames", "skyblock"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 23, name: "The Hive", ip: "play.hivemc.com", discord: "https://discord.gg/thehive", description: "Minigames and survival", tags: ["minigames", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 24, name: "WynnCraft", ip: "play.wynncraft.com", discord: "https://discord.gg/wynncraft", description: "RPG adventure", tags: ["rpg", "adventure"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 25, name: "PixelmonCraft", ip: "play.pixelmoncraft.com", discord: "https://discord.gg/pixelmoncraft", description: "Pixelmon survival", tags: ["pixelmon", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 26, name: "Performium", ip: "play.performium.net", discord: "https://discord.gg/performium", description: "SMP and minigames", tags: ["smp", "minigames"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 27, name: "MunchyMC", ip: "play.munchymc.com", discord: "https://discord.gg/munchymc", description: "KitPvP and survival", tags: ["pvp", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 28, name: "Desteria", ip: "play.desteria.com", discord: "https://discord.gg/desteria", description: "Factions and RPG", tags: ["factions", "rpg"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 29, name: "EcoCityCraft", ip: "play.ecc.eco", discord: "https://discord.gg/ecocitycraft", description: "Economy survival", tags: ["economy", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 30, name: "Skyblock Network", ip: "play.skyblock.net", discord: "https://discord.gg/skyblocknetwork", description: "Skyblock and survival", tags: ["skyblock", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 31, name: "PrisonFun", ip: "play.prisonfun.com", discord: "https://discord.gg/prisonfun", description: "Prison and PvP", tags: ["prison", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 32, name: "ArcadeMC", ip: "play.arcademc.net", discord: "https://discord.gg/arcademc", description: "Minigames and survival", tags: ["minigames", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 33, name: "SkyKings", ip: "play.skykings.net", discord: "https://discord.gg/skykings", description: "Skyblock and PvP", tags: ["skyblock", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 34, name: "InvadedLands", ip: "play.invadedlands.net", discord: "https://discord.gg/invadedlands", description: "KitPvP and Skyblock", tags: ["pvp", "skyblock"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 35, name: "MineHeroes", ip: "play.mineheroes.net", discord: "https://discord.gg/mineheroes", description: "Factions and survival", tags: ["factions", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 36, name: "SnapCraft", ip: "play.snapcraft.net", discord: "https://discord.gg/snapcraft", description: "Prison and Skyblock", tags: ["prison", "skyblock"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 37, name: "GommeHD", ip: "play.gommehd.net", discord: "https://discord.gg/gommehd", description: "Minigames and PvP", tags: ["minigames", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 38, name: "PokeSaga", ip: "play.pokesaga.org", discord: "https://discord.gg/pokesaga", description: "Pixelmon and survival", tags: ["pixelmon", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 39, name: "LemonCloud", ip: "play.lemoncloud.net", discord: "https://discord.gg/lemoncloud", description: "Factions and Skyblock", tags: ["factions", "skyblock"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 40, name: "VulcanMC", ip: "play.vulcanmc.net", discord: "https://discord.gg/vulcanmc", description: "HCF and PvP", tags: ["pvp", "hcf"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 41, name: "Minesharp", ip: "play.minesharp.org", discord: "https://discord.gg/minesharp", description: "Survival and minigames", tags: ["survival", "minigames"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 42, name: "BlockDrop", ip: "play.blockdrop.org", discord: "https://discord.gg/blockdrop", description: "Minigames and Skyblock", tags: ["minigames", "skyblock"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 43, name: "PixelSpark", ip: "play.pixelspark.org", discord: "https://discord.gg/pixelspark", description: "Pixelmon and survival", tags: ["pixelmon", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 44, name: "CraftyMynes", ip: "play.craftymynes.com", discord: "https://discord.gg/craftymynes", description: "Vanilla survival", tags: ["survival", "vanilla"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 45, name: "SkyHype", ip: "play.skyhype.net", discord: "https://discord.gg/skyhype", description: "Skyblock and survival", tags: ["skyblock", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 46, name: "PokeFind", ip: "play.pokefind.co", discord: "https://discord.gg/pokefind", description: "Pixelmon adventure", tags: ["pixelmon", "adventure"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 47, name: "MineBox", ip: "play.minebox.es", discord: "https://discord.gg/minebox", description: "Survival and PvP", tags: ["survival", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 48, name: "PvPWars", ip: "play.pvpwars.net", discord: "https://discord.gg/pvpwars", description: "Skyblock and factions", tags: ["skyblock", "factions"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 49, name: "ArkhamNetwork", ip: "play.arkhamnetwork.org", discord: "https://discord.gg/arkhamnetwork", description: "Prison and factions", tags: ["prison", "factions"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 50, name: "Minecadia", ip: "play.minecadia.com", discord: "https://discord.gg/minecadia", description: "Factions and survival", tags: ["factions", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 51, name: "SkyRealms", ip: "play.skyrealms.games", discord: "https://discord.gg/skyrealms", description: "Skyblock with custom features", tags: ["skyblock", "economy"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 52, name: "PixelmonRealms", ip: "play.pixelmonrealms.com", discord: "https://discord.gg/pixelmonrealms", description: "Pixelmon with quests", tags: ["pixelmon", "quests"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 53, name: "Craftadia", ip: "play.craftadia.com", discord: "https://discord.gg/craftadia", description: "Survival with custom biomes", tags: ["survival", "smp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 54, name: "PvPDojo", ip: "play.pvpdojo.com", discord: "https://discord.gg/pvpdojo", description: "Competitive PvP arena", tags: ["pvp", "duels"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 55, name: "EcoSMP", ip: "play.ecosmp.net", discord: "https://discord.gg/ecosmp", description: "Economy-focused SMP", tags: ["economy", "smp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 56, name: "SkyForge", ip: "play.skyforge.me", discord: "https://discord.gg/skyforge", description: "Skyblock with RPG elements", tags: ["skyblock", "rpg"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 57, name: "PrisonRealm", ip: "play.prisonrealm.net", discord: "https://discord.gg/prisonrealm", description: "Modern prison server", tags: ["prison", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 58, name: "MiniGameHub", ip: "play.minigamehub.net", discord: "https://discord.gg/minigamehub", description: "Variety of minigames", tags: ["minigames", "parkour"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 59, name: "AdventureCraft", ip: "play.adventurecraft.net", discord: "https://discord.gg/adventurecraft", description: "RPG adventure server", tags: ["rpg", "adventure"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 60, name: "SurvivalQuest", ip: "play.survivalquest.org", discord: "https://discord.gg/survivalquest", description: "Quest-based survival", tags: ["survival", "quests"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 61, name: "PixelVenture", ip: "play.pixelventure.net", discord: "https://discord.gg/pixelventure", description: "Pixelmon adventure", tags: ["pixelmon", "adventure"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 62, name: "FactionWars", ip: "play.factionwars.net", discord: "https://discord.gg/factionwars", description: "Intense factions PvP", tags: ["factions", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 63, name: "SkyHaven", ip: "play.skyhaven.net", discord: "https://discord.gg/skyhaven", description: "Skyblock with custom islands", tags: ["skyblock", "economy"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 64, name: "CraftVerse", ip: "play.craftverse.net", discord: "https://discord.gg/craftverse", description: "Vanilla survival with events", tags: ["survival", "vanilla"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 65, name: "PvPRealm", ip: "play.pvprealm.net", discord: "https://discord.gg/pvprealm", description: "Competitive PvP server", tags: ["pvp", "duels"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 66, name: "EcoCraft", ip: "play.ecocraft.net", discord: "https://discord.gg/ecocraft", description: "Economy survival with shops", tags: ["economy", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 67, name: "PixelRealm", ip: "play.pixelrealm.net", discord: "https://discord.gg/pixelrealm", description: "Pixelmon with custom gyms", tags: ["pixelmon", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 68, name: "MiniCraft", ip: "play.minicraft.net", discord: "https://discord.gg/minicraft", description: "Minigames galore", tags: ["minigames", "parkour"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 69, name: "SkyCrafters", ip: "play.skycrafters.net", discord: "https://discord.gg/skycrafters", description: "Skyblock with challenges", tags: ["skyblock", "economy"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 70, name: "PrisonCraft", ip: "play.prisoncraft.net", discord: "https://discord.gg/prisoncraft", description: "Prison with custom ranks", tags: ["prison", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 71, name: "AdventureRealms", ip: "play.adventurerealms.net", discord: "https://discord.gg/adventurerealms", description: "RPG with custom mobs", tags: ["rpg", "adventure"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 72, name: "SurvivalHaven", ip: "play.survivalhaven.net", discord: "https://discord.gg/survivalhaven", description: "Community survival", tags: ["survival", "smp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 73, name: "PvPZone", ip: "play.pvpzone.net", discord: "https://discord.gg/pvpzone", description: "PvP with leaderboards", tags: ["pvp", "duels"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 74, name: "SkyLegends", ip: "play.skylegends.net", discord: "https://discord.gg/skylegends", description: "Skyblock with events", tags: ["skyblock", "events"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 75, name: "PixelQuest", ip: "play.pixelquest.net", discord: "https://discord.gg/pixelquest", description: "Pixelmon with quests", tags: ["pixelmon", "quests"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 76, name: "CraftRealms", ip: "play.craftrealms.net", discord: "https://discord.gg/craftrealms", description: "Vanilla survival", tags: ["survival", "vanilla"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 77, name: "MiniVerse", ip: "play.miniverse.net", discord: "https://discord.gg/miniverse", description: "Minigames with friends", tags: ["minigames", "parkour"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 78, name: "FactionRealms", ip: "play.factionrealms.net", discord: "https://discord.gg/factionrealms", description: "Factions with raids", tags: ["factions", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 79, name: "EcoRealms", ip: "play.ecorealms.net", discord: "https://discord.gg/ecorealms", description: "Economy survival", tags: ["economy", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 80, name: "SkyQuest", ip: "play.skyquest.net", discord: "https://discord.gg/skyquest", description: "Skyblock with quests", tags: ["skyblock", "quests"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 81, name: "PrisonHaven", ip: "play.prisonhaven.net", discord: "https://discord.gg/prisonhaven", description: "Prison with events", tags: ["prison", "events"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 82, name: "AdventureZone", ip: "play.adventurezone.net", discord: "https://discord.gg/adventurezone", description: "RPG adventure", tags: ["rpg", "adventure"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 83, name: "PixelHaven", ip: "play.pixelhaven.net", discord: "https://discord.gg/pixelhaven", description: "Pixelmon survival", tags: ["pixelmon", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 84, name: "PvPCraft", ip: "play.pvpcraft.net", discord: "https://discord.gg/pvpcraft", description: "Competitive PvP", tags: ["pvp", "duels"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 85, name: "SkyCraft", ip: "play.skycraft.net", discord: "https://discord.gg/skycraft", description: "Skyblock with custom features", tags: ["skyblock", "economy"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 86, name: "SurvivalRealms", ip: "play.survivalrealms.net", discord: "https://discord.gg/survivalrealms", description: "Community SMP", tags: ["survival", "smp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 87, name: "MiniRealms", ip: "play.minirealms.net", discord: "https://discord.gg/minirealms", description: "Minigames and parkour", tags: ["minigames", "parkour"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 88, name: "FactionCraft", ip: "play.factioncraft.net", discord: "https://discord.gg/factioncraft", description: "Factions with raids", tags: ["factions", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 89, name: "EcoHaven", ip: "play.ecohaven.net", discord: "https://discord.gg/ecohaven", description: "Economy survival", tags: ["economy", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 90, name: "SkyRealms2", ip: "play.skyrealms2.net", discord: "https://discord.gg/skyrealms2", description: "Skyblock with events", tags: ["skyblock", "events"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 91, name: "PixelCraft", ip: "play.pixelcraft.net", discord: "https://discord.gg/pixelcraft", description: "Pixelmon with gyms", tags: ["pixelmon", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 92, name: "PrisonRealms", ip: "play.prisonrealms.net", discord: "https://discord.gg/prisonrealms", description: "Prison with ranks", tags: ["prison", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 93, name: "AdventureCraft2", ip: "play.adventurecraft2.net", discord: "https://discord.gg/adventurecraft2", description: "RPG with custom mobs", tags: ["rpg", "adventure"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 94, name: "SurvivalZone", ip: "play.survivalzone.net", discord: "https://discord.gg/survivalzone", description: "Survival with events", tags: ["survival", "events"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 95, name: "PvPRealms", ip: "play.pvprealms.net", discord: "https://discord.gg/pvprealms", description: "Competitive PvP", tags: ["pvp", "duels"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 96, name: "SkyHaven2", ip: "play.skyhaven2.net", discord: "https://discord.gg/skyhaven2", description: "Skyblock with challenges", tags: ["skyblock", "economy"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 97, name: "PixelRealms2", ip: "play.pixelrealms2.net", discord: "https://discord.gg/pixelrealms2", description: "Pixelmon survival", tags: ["pixelmon", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 98, name: "MiniCraft2", ip: "play.minicraft2.net", discord: "https://discord.gg/minicraft2", description: "Minigames galore", tags: ["minigames", "parkour"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 99, name: "FactionRealms2", ip: "play.factionrealms2.net", discord: "https://discord.gg/factionrealms2", description: "Factions with raids", tags: ["factions", "pvp"], playerCount: 0, maxPlayers: 1000, isOnline: true },
+      { id: 100, name: "EcoCraft2", ip: "play.ecocraft2.net", discord: "https://discord.gg/ecocraft2", description: "Economy survival", tags: ["economy", "survival"], playerCount: 0, maxPlayers: 1000, isOnline: true }
     ];
 
     const ServerCard = ({ server }) => {
       const [iconSrc, setIconSrc] = React.useState(server.iconSrc || `https://api.mcsrvstat.us/icon/${server.ip}`);
+      const [showTooltip, setShowTooltip] = React.useState(false);
 
       const handleIconError = (e, retryCount = 0) => {
         const maxRetries = 3;
         if (retryCount < maxRetries) {
-          const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s
+          const delay = Math.pow(2, retryCount) * 1000;
           setTimeout(() => {
             setIconSrc(`https://api.mcsrvstat.us/icon/${server.ip}?t=${Date.now()}`);
           }, delay);
         } else {
-          e.target.src = 'https://cdn.discordapp.com/attachments/1392254650295779480/1392991306887860296/TEST.webp?ex=68718bc0&is=68703a40&hm=3c0f040706eb446399668b2fa8dfe4d9eb97dbe09296c78a41feb308032cb02f&';
+          e.target.src = 'https://via.placeholder.com/48?text=MC';
         }
       };
 
+      const copyIpToClipboard = () => {
+        navigator.clipboard.write(server.ip).then(() => {
+          setShowTooltip(true);
+          setTimeout(() => setShowTooltip(false), 2000);
+        });
+      };
+
       return (
-        <div className="server-card bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-start gap-4">
+        <div className="server-card animate-fadeIn shadow-lg">
           <img
             src={iconSrc}
             alt={`${server.name} icon`}
             className="w-12 h-12 rounded"
             onError={(e) => handleIconError(e, server.iconRetryCount || 0)}
           />
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-purple-400">{server.name}</h3>
+          <div className="flex-1 relative">
+            <h3
+              className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 font-orbitron cursor-pointer hover:underline"
+              onClick={copyIpToClipboard}
+            >
+              {server.name}
+              {showTooltip && (
+                <span className="tooltip show ml-2">Copied!</span>
+              )}
+            </h3>
             <p className="text-gray-400 text-sm mt-1">{server.description}</p>
-            <p className="text-gray-100 mt-1"><strong>IP:</strong> {server.ip}</p>
-            <p className="text-gray-100 mt-1"><strong>Players:</strong> {server.playerCount}/{server.maxPlayers}</p>
-            <p className="text-gray-100 mt-1"><strong>Status:</strong> {server.isOnline ? <span className="text-purple-400">Online</span> : <span className="text-red-400">Offline</span>}</p>
-            <a href={server.discord} target="_blank" className="text-blue-400 hover:text-blue-300 mt-1 inline-block">Join Discord</a>
+            <div className="mt-1 flex items-center">
+              <span className="text-gray-100 font-roboto-mono text-sm bg-gray-900 px-2 py-1 rounded mr-2">{server.ip}</span>
+              <button
+                onClick={copyIpToClipboard}
+                className="neon-button text-white px-2 py-1 text-sm rounded"
+              >
+                Copy
+              </button>
+            </div>
+            <a
+              href={server.discord}
+              target="_blank"
+              className="neon-button text-white px-3 py-1 rounded mt-2 inline-block text-sm"
+            >
+              Join Discord
+            </a>
+            <div className="mt-2">
+              <span className="text-gray-100">Players: </span>
+              <div className="progress-bar w-32 inline-block">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${(server.playerCount / server.maxPlayers) * 100}%` }}
+                ></div>
+              </div>
+              <span className="text-gray-100 ml-2">{server.playerCount}/{server.maxPlayers}</span>
+            </div>
+            <p className="text-gray-100 mt-1">
+              <strong>Status:</strong> {server.isOnline ? <span className="text-cyan-400">Online</span> : <span className="text-red-400">Offline</span>}
+            </p>
             <div className="mt-2">
               {server.tags.map(tag => (
                 <span key={tag} className="inline-block bg-gray-700 text-gray-200 text-sm px-2 py-1 rounded mr-2">{tag}</span>
@@ -152,12 +317,28 @@
       const tags = [...new Set(servers.flatMap(server => server.tags))].sort();
 
       React.useEffect(() => {
+        particlesJS('particles-js', {
+          particles: {
+            number: { value: 80, density: { enable: true, value_area: 800 } },
+            color: { value: '#a855f7' },
+            shape: { type: 'circle' },
+            opacity: { value: 0.5, random: true },
+            size: { value: 3, random: true },
+            line_linked: { enable: true, distance: 150, color: '#00ddeb', opacity: 0.4, width: 1 },
+            move: { enable: true, speed: 2, direction: 'none', random: true }
+          },
+          interactivity: {
+            detect_on: 'canvas',
+            events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' } },
+            modes: { repulse: { distance: 100 }, push: { particles_nb: 4 } }
+          }
+        });
+
         const fetchServerData = async () => {
           const updatedServers = await Promise.all(
             initialServers.map(async (server, index) => {
               let iconSrc = `https://api.mcsrvstat.us/icon/${server.ip}`;
               let iconAvailable = false;
-              // Prefetch icon to check availability
               try {
                 const iconResponse = await fetch(iconSrc, { method: 'HEAD' });
                 iconAvailable = iconResponse.ok;
@@ -172,7 +353,7 @@
                   isOnline: data.online !== false,
                   playerCount: data.online ? (data.players?.online || 0) : 0,
                   maxPlayers: data.online ? (data.players?.max || 1000) : 1000,
-                  iconSrc: iconAvailable ? iconSrc : 'https://cdn.discordapp.com/attachments/1392254650295779480/1392991306887860296/TEST.webp?ex=68718bc0&is=68703a40&hm=3c0f040706eb446399668b2fa8dfe4d9eb97dbe09296c78a41feb308032cb02f&',
+                  iconSrc: iconAvailable ? iconSrc : 'https://via.placeholder.com/48?text=MC',
                   iconRetryCount: 0,
                 };
               } catch (error) {
@@ -182,7 +363,7 @@
                   isOnline: true,
                   playerCount: 0,
                   maxPlayers: 1000,
-                  iconSrc: iconAvailable ? iconSrc : 'https://cdn.discordapp.com/attachments/1392254650295779480/1392991306887860296/TEST.webp?ex=68718bc0&is=68703a40&hm=3c0f040706eb446399668b2fa8dfe4d9eb97dbe09296c78a41feb308032cb02f&',
+                  iconSrc: iconAvailable ? iconSrc : 'https://via.placeholder.com/48?text=MC',
                   iconRetryCount: 0,
                 };
               }
@@ -263,7 +444,7 @@
         <div className="container mx-auto p-6 relative">
           <button
             onClick={() => setShowModal(true)}
-            className="absolute top-4 left-4 text-purple-400 hover:text-purple-500"
+            className="absolute top-4 left-4 text-cyan-400 hover:text-cyan-300 transition-transform duration-200 hover:scale-110"
             title={profile.username ? `Logged in as ${profile.username}` : "Sign Up / Log In"}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -274,7 +455,7 @@
             <a
               href="https://discord.gg/oxied"
               target="_blank"
-              className="text-purple-400 hover:text-purple-500"
+              className="text-cyan-400 hover:text-cyan-300 transition-transform duration-200 hover:scale-110"
               title="Join Our Discord"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -284,7 +465,7 @@
             <a
               href="https://www.tiktok.com/@oxied_site"
               target="_blank"
-              className="text-purple-400 hover:text-purple-500"
+              className="text-cyan-400 hover:text-cyan-300 transition-transform duration-200 hover:scale-110"
               title="Follow us on TikTok"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -294,7 +475,7 @@
             <a
               href="https://www.instagram.com/oxied_site"
               target="_blank"
-              className="text-purple-400 hover:text-purple-500"
+              className="text-cyan-400 hover:text-cyan-300 transition-transform duration-200 hover:scale-110"
               title="Follow us on Instagram"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -302,23 +483,23 @@
               </svg>
             </a>
           </div>
-          <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center justify-center mb-8 header">
             <img
-              src="https://cdn.discordapp.com/attachments/1392254650295779480/1392991306887860296/TEST.webp?ex=68718bc0&is=68703a40&hm=3c0f040706eb446399668b2fa8dfe4d9eb97dbe09296c78a41feb308032cb02f&"
+              src="https://via.placeholder.com/32?text=MC"
               alt="Website Icon"
-              className="w-8 h-8 mr-2"
+              className="w-8 h-8 mr-2 transition-transform duration-200 hover:scale-110"
             />
-            <h1 className="text-4xl font-bold text-purple-400">Minecraft Server Discovery</h1>
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 font-orbitron">Minecraft Server Discovery</h1>
           </div>
           {showModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full">
-                <h2 className="text-xl text-purple-400 mb-4">{profile.username ? "Edit Profile" : "Create Profile"}</h2>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center modal">
+              <div className="bg-gray-800 bg-opacity-90 p-6 rounded-lg max-w-md w-full backdrop-filter backdrop-blur-lg border border-purple-400">
+                <h2 className="text-xl text-cyan-400 mb-4 font-orbitron">{profile.username ? "Edit Profile" : "Create Profile"}</h2>
                 <div className="flex items-center mb-4">
                   <img
                     src={newProfilePic || profile.profilePic || "https://via.placeholder.com/64?text=User"}
                     alt="Profile Picture"
-                    className="w-16 h-16 rounded-full mr-4"
+                    className="w-16 h-16 rounded-full mr-4 border border-cyan-400"
                   />
                   <input
                     type="file"
@@ -332,25 +513,25 @@
                   placeholder="Enter username"
                   value={newUsername}
                   onChange={e => setNewUsername(e.target.value)}
-                  className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200"
                 />
                 <input
                   type="email"
                   placeholder="Enter email"
                   value={newEmail}
                   onChange={e => setNewEmail(e.target.value)}
-                  className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200"
                 />
                 <input
                   type="password"
                   placeholder="Enter password"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200"
                 />
                 <div className="flex justify-end gap-2">
-                  <button onClick={() => setShowModal(false)} className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-500">Cancel</button>
-                  <button onClick={handleProfileSubmit} className="bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-500">Submit</button>
+                  <button onClick={() => setShowModal(false)} className="neon-button text-white px-4 py-2 rounded">Cancel</button>
+                  <button onClick={handleProfileSubmit} className="neon-button text-white px-4 py-2 rounded">Submit</button>
                 </div>
                 {profile.username && (
                   <button
@@ -363,7 +544,7 @@
                       setNewProfilePic("");
                       setShowModal(false);
                     }}
-                    className="mt-2 text-purple-400 hover:text-purple-500"
+                    className="mt-2 text-cyan-400 hover:text-cyan-300 transition-all duration-200"
                   >
                     Logout
                   </button>
@@ -377,19 +558,19 @@
               placeholder="Search servers by name, IP, or tags..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="flex-1 p-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="flex-1 p-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 animate-pulse"
             />
             <input
               type="number"
               placeholder="Min players..."
               value={playerFilter}
               onChange={e => setPlayerFilter(e.target.value)}
-              className="w-full md:w-40 p-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full md:w-40 p-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 animate-pulse"
             />
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="w-full md:w-40 p-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full md:w-40 p-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 animate-pulse"
             >
               <option value="all">All Status</option>
               <option value="online">Online</option>
@@ -398,7 +579,7 @@
             <select
               value={tagFilter}
               onChange={e => setTagFilter(e.target.value)}
-              className="w-full md:w-40 p-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full md:w-40 p-3 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 animate-pulse"
             >
               <option value="">All Tags</option>
               {tags.map(tag => <option key={tag} value={tag}>{tag}</option>)}
@@ -408,7 +589,7 @@
             {paginatedServers.length > 0 ? (
               paginatedServers.map(server => <ServerCard key={server.id} server={server} />)
             ) : (
-              <p className="text-gray-400 text-center col-span-full">No servers found.</p>
+              <p className="text-gray-400 text-center col-span-full animate-fadeIn">No servers found.</p>
             )}
           </div>
           <div className="flex justify-center mt-6 gap-2">
@@ -416,19 +597,19 @@
               <button
                 key={page}
                 onClick={() => handlePageChange(page)}
-                className={`px-4 py-2 rounded ${currentPage === page ? 'bg-purple-400 text-white' : 'bg-gray-700 text-gray-200 hover:bg-gray-600'}`}
+                className={`pagination-button px-4 py-2 rounded ${currentPage === page ? 'neon-button text-white' : 'bg-gray-700 text-gray-200 hover:bg-gray-600 transition-transform duration-200 hover:scale-105'}`}
               >
                 {page}
               </button>
             ))}
           </div>
-          <footer className="mt-12 p-6 bg-gray-800 rounded-lg text-center">
-            <h2 className="text-2xl font-bold text-purple-400 mb-4">Join Our Community</h2>
+          <footer className="mt-12 p-6 bg-gray-800 bg-opacity-90 rounded-lg text-center backdrop-filter backdrop-blur-lg animate-fadeIn">
+            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 font-orbitron mb-4">Join Our Community</h2>
             <p className="text-gray-300 mb-4">Connect with us and other Minecraft players!</p>
             <a
               href="https://discord.gg/oxied"
               target="_blank"
-              className="inline-block bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-500 transition-colors mb-4"
+              className="inline-block neon-button text-white px-4 py-2 rounded mb-4"
             >
               Join Our Discord
             </a>
@@ -436,35 +617,35 @@
             <a
               href="https://ko-fi.com/oxied_site"
               target="_blank"
-              className="inline-block bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-500 transition-colors mb-4"
+              className="inline-block neon-button text-white px-4 py-2 rounded mb-4"
             >
               Donate to Us
             </a>
-            <h2 className="text-2xl font-bold text-purple-400 mb-4">Suggest a Server</h2>
+            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 font-orbitron mb-4">Suggest a Server</h2>
             <div className="suggest-section max-w-md mx-auto">
               <input
                 type="text"
                 placeholder="Server Name"
                 value={suggestName}
                 onChange={e => setSuggestName(e.target.value)}
-                className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 animate-pulse"
               />
               <input
                 type="text"
                 placeholder="Server IP"
                 value={suggestIp}
                 onChange={e => setSuggestIp(e.target.value)}
-                className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 animate-pulse"
               />
               <textarea
                 placeholder="Server Description"
                 value={suggestDescription}
                 onChange={e => setSuggestDescription(e.target.value)}
-                className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                className="w-full p-3 mb-2 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200 animate-pulse"
               />
               <button
                 onClick={handleSubmit}
-                className="w-full bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-500 transition-colors"
+                className="w-full neon-button text-white px-4 py-2 rounded transition-transform duration-200 hover:scale-105"
               >
                 Submit Server Suggestion
               </button>
